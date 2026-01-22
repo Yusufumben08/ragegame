@@ -5,14 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phaser game</title>
     <style>
-        #game-container {
+        canvas {
             position: absolute;
-            margin-left: 10em;
+            margin-inline: 5vw;
+            border: 10px solid #FF7151;
+            width: 800px;
+            height: 600px;
+        }
 
+        body {
+            background-color: #222222;
+            margin: 0;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
+    <h1 style="color: white; margin:auto; text-align: center; padding: 2em; font-family:Arial, Helvetica, sans-serif;">Unfun Platformer</h1>
     <div id="game-container">
         <script src="./dist/app.js"></script>
     </div>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Win!!!!</title>
+    
+</head>
+<body style="
+background: linear-gradient(90deg, rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 25%, rgba(237, 221, 83, 1) 50%, rgba(255, 153, 0, 1) 74%, rgba(237, 88, 83, 1) 100%);">
+    <div style="background-color: #e4e4e4; border: 5px solid black; padding: 2em; margin:2em; border-radius: 2em;">
+            <h1 style="color: white; margin:auto; text-align: center; padding: 2em; font-family:Arial, Helvetica, sans-serif;">You Win!!!!</h1>
+
+        You have been awarded 9999999 flavortown cookies (very real) <br>
+        Thanks for suffering through this game :)    <br>
+        <a href="/">Go back</a>
+    </div>
+    <script>
+        function rainbowText() {
+            const colors = ['red', 'green', 'blue', 'indigo', 'violet'];
+            let colorIndex = 0;
+            const elements = document.querySelectorAll('h1, div, a');
+
+            setInterval(() => {
+                elements.forEach(el => {
+                    el.style.color = colors[colorIndex];
+                });
+                colorIndex = (colorIndex + 1) % colors.length;
+            }, 500);
+        }
+        rainbowText();
+
+        function confettiEffect() {
+            const confettiCount = 100;
+            const confettiColors = ['#FFC700', '#FF0000', '#2E3192', '#41BBC7', '#7F8C8D'];
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'fixed';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                confetti.style.top = Math.random() * window.innerHeight + 'px';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.opacity = Math.random();
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                confetti.style.animation = `fall ${2 + Math.random() * 3}s linear infinite`;
+                document.body.appendChild(confetti);
+            }
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(${window.innerHeight}px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        confettiEffect();
+    </script>
+    
+                                                                </body>
+
+</html>

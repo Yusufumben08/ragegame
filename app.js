@@ -155,7 +155,6 @@ function portalTransition(x, y) {
 function getmousepos() {
     setTimeout(() => {
         console.log(player.x, player.y);
-        player.setPosition(player.x + 1, player.y);
     }, 1000);
 }
 
@@ -330,7 +329,7 @@ function doLevel1() {  //each level now has its own function and local variables
         this.level1.button2 = spawnButton.call(this, 1700, 552, () => {
             this.level1.button2.setTexture('p-button');
             spawnWall.call(this, 1900, 520).setScale(2).refreshBody();
-            spawnText.call(this, 1850, 460, 'Just refresh the page...').setColor('#000000');
+            spawnText.call(this, 1500, 630, 'Youre softlocked.. Refresh page').setColor('#000000');
         });
         level1SetupDone = true;
     }
@@ -363,10 +362,10 @@ function doLevel2() {
         this.level2.spikes2m.setAngle(-90);
         this.level2.spikes2m.setAlpha(0);
         this.level2.spikes2mw.setAlpha(0);
-        this.level2.flyingtrapbox = spawnMovingWall.call(this, 3000, 0, 90);
-        this.level2.flyingtrapbox.setScale(2, 0.6);
+        this.level2.flyingtrapbox = spawnMovingWall.call(this, 3000, -20, 90);
+        this.level2.flyingtrapbox.setScale(1.5,1);
         this.level2.flyingtrapspike = spawnMovingSpikes.call(this, 3000, 20, () => { killPlayer(); }, 180);
-        this.level2.flyingtrapspike.setScale(2,);
+        this.level2.flyingtrapspike.setScale(1.7);
         this.level2.flyingtrapStarted = false;
         level2SetupDone = true;
     }
@@ -462,6 +461,10 @@ function doLevel3() {
     }
     if (this.level3.fakewallstage === 1) {
         stopAtX(this.level3.fakewall, 4650);
+        setTimeout(() => {
+            this.level3.fakewall.destroy();
+            this.level3.fakewallstage = 2;
+        }, 5000);
     }
 }
 
@@ -499,6 +502,7 @@ function doLevel4() {
         startLinearMotion.call(this, this.level4.button1, 0, 500);
         this.level4.button1pressedStage = 1;
         this.level4.spikes = spawnMovingSpikes.call(this, 6100, -100, () => { killPlayer(); }, -90);
+        this.level4.spikes.setScale(1.5).refreshBody();
         startLinearMotion.call(this, this.level4.spikes, -330, 0);
     }
     if (this.level4.button1pressedStage === 1) {
@@ -523,15 +527,18 @@ function doLevel4() {
         this.level4.button1.setAngle(0);
         this.level4.spikes.setAngle(90);
     }
-    if (this.level4.button1pressedStage === 6 && player.y < 10 && player.x > 5500) {
+    if (this.level4.button1pressedStage === 6) {
         startLinearMotion.call(this, this.level4.spikes, 330, 0);
     }
     if (this.level4.button1pressedStage > 5) {
         spawnIsland.call(this, 5600, -75);
         spawnIsland.call(this, 5700, -150);
         stopAtX(this.level4.spikes, 5800);
-        spawnPortal.call(this, 6000, 0, 6200, 430);
-        this.level4.button.texture = 'p-button';
+        this.level4.portals = spawnPortal.call(this, 6000, 0, 6200, 330, 1, 0, -90);
+        console.log(this.level4.portals);
+        this.level4.portals.orange.setAlpha(0);
+        this.level4.button1.texture = 'p-button';
+        this.level4.button1pressedStage = -200000; // disable further stages
     }
 
 }
@@ -543,7 +550,7 @@ let level5SetupDone = false;
 function doLevel5() {
     // one-time setup
     if (!level5SetupDone) {
-        player.setPosition(6200, 400);
+        //player.setPosition(6200, 400);
         spawnFloor.call(this, 6500, 698);
         spawnFloor.call(this, 7200, 698);
         spawnText.call(this, 6550, 640, 'Level 5: (not) Working with portals');
@@ -557,14 +564,23 @@ function doLevel5() {
         spawnIsland.call(this, 7000, 450);
         spawnIsland.call(this, 8000, 450).setScale(5, 1).refreshBody();
         this.level5.movingspike = spawnMovingSpikes.call(this, 7750, 430, () => { killPlayer(); }).setScale(1, 1);
-        this.level5.endportal = this.physics.add.sprite(9000,9000,'portal');
-        spawnText.call(this, 7050, 640, 'The end?');
+        this.level5.endportal = this.physics.add.sprite(9290, 430, 'portal');
+        this.level5.endportal.body.setAllowGravity(false);
+        this.level5.endportal.setScale(3).setImmovable(true).refreshBody();
+        spawnText.call(this, 9000, 400, 'The end?');
+        spawnIsland.call(this, 9200, 500).setScale(2).refreshBody();
         this.level5.portalstage = 0;
         level5SetupDone = true;
         console.log(this.level5.portalblue, this.level5.portalorange);
         spawnButton.call(this, 7000, 430, () => {
             this.level5.portalstage = 2;
         });
+        this.physics.add.overlap(player, this.level5.endportal, function () {
+            portalTransition.call(this, 1000, 550);
+            setTimeout(() => {
+                window.location.href = "/win.html";
+            }, 3000);
+        }, null, this);
     }
     //loop
     // Clamp fall speed only during level 5 updates
@@ -589,10 +605,9 @@ function doLevel5() {
                 startLinearMotion.call(this, this.level5.movingspike, -400, 0);
             }, 1000);
         }
-        if(this.level5.movingspike.x > 8300){
+        if (this.level5.movingspike.x > 8300) {
             this.level5.movingspike.x = 8300;
         }
     }
-    //spawn end portal
-
+    //spawn end portal- done
 }
