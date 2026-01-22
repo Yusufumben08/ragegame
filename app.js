@@ -42,6 +42,13 @@ function preload() {
         frameWidth: 22,
         frameHeight: 20
     })
+    // Load audio files
+    this.load.audio('bg2', './audio/bg2.mp3')
+    this.load.audio('bg3', './audio/bg3.mp3')
+    this.load.audio('bg4', './audio/bg4.mp3')
+    this.load.audio('death', './audio/death.mp3')
+    this.load.audio('jump-sfx', './audio/jump.mp3')
+    this.load.audio('button-sfx', './audio/button.mp3')
 }
 let player
 let cursors
@@ -50,6 +57,7 @@ let buttonDistCrossed = false;
 let level1SetupDone = false;
 let level2SetupDone = false;
 let level3SetupDone = false;
+let deathInProgress = false;
 /**
  * @this {Phaser.Scene}
  */
@@ -59,6 +67,9 @@ function create() {
     this.level3 = {}; // Store level 3 objects here
     this.level4 = {}; // Store level 4 objects here
     this.level5 = {}; // Store level 5 objects here
+    // Play background music
+    this.bgm = this.sound.add('bg3', { loop: true, volume: 0.3 });
+    this.bgm.play();
     let platforms = this.physics.add.staticGroup()
     let objects = this.physics.add.staticGroup()
 
@@ -126,8 +137,10 @@ function update() {
 
     if (up && player.body.touching.down) {
         player.setVelocityY(-520);
+        // Play jump sound effect (slightly lower pitch)
+        this.sound.play('jump-sfx', { volume: 0.3, detune: -350 });
     }
-
+    // dostuffig
     moveCamera.call(this);
     checkDeathBarrier();
     this.input.once('pointerup', getmousepos);
@@ -167,11 +180,36 @@ function enforceMaxYVelocity(maxYVelocity) {
 function checkDeathBarrier() {
     if (player.y > 1000) {
         //add death animation (mario type shi)
-        killPlayer();
+        killPlayer.call(this);
     }
 }
 
-function killPlayer() {
+function killPlayer(sceneParam) {
+    if (deathInProgress) return;
+    deathInProgress = true;
+
+    const scene = sceneParam || this || (player && player.scene) || null;
+    const bgm = scene && scene.bgm ? scene.bgm : null;
+    
+    // Pause BGM
+    if (bgm && bgm.isPlaying) {
+        bgm.pause();
+    }
+
+    // Play death sound
+    if (scene && scene.sound) {
+        const deathSound = scene.sound.add('death', { volume: 0.5 });
+        deathSound.once('complete', () => {
+            if (bgm) bgm.resume();
+            deathSound.destroy();
+            deathInProgress = false;
+        });
+        deathSound.play();
+    } else {
+        if (bgm) bgm.resume();
+        deathInProgress = false;
+    }
+
     player.setVelocity(0, 0);
     setTimeout(() => {
         player.setPosition(100, 500);
@@ -193,10 +231,22 @@ function spawnButton(x, y, functionOnPress) {
     let button = this.physics.add.sprite(x, y, 'u-button');
     button.body.setAllowGravity(false);
     button.setImmovable(false);
+    button.soundPlayed = false;
+    button.lastPressTime = 0;
     this.physics.add.overlap(player, button, function () {
+        const now = this.time.now;
+        // Debounce to avoid multi-trigger while overlapping in one press
+        if (now - button.lastPressTime < 250) return;
+        button.lastPressTime = now;
+
+        if (!button.soundPlayed) {
+            // Louder and a bit slower for emphasis
+            this.sound.play('button-sfx', { volume: 0.8, rate: 0.70 });
+            button.soundPlayed = true;
+        }
         console.log("Button Pressed");
         functionOnPress();
-    });
+    }, null, this);
     return button;
 }
 
@@ -318,6 +368,25 @@ function stopAtX(object, targetX) {
 }
 
 /**
+ * Switch background music.
+ * @this {Phaser.Scene}
+ * @param {string} newKey - Audio key to play (preloaded).
+ */
+function switchBGM(newKey) {
+    if (this.bgm && this.bgm.key === newKey && this.bgm.isPlaying) {
+        return this.bgm;
+    }
+    const volume = this.bgm ? this.bgm.volume : 0.3;
+    if (this.bgm) {
+        this.bgm.stop();
+        this.bgm.destroy();
+    }
+    this.bgm = this.sound.add(newKey, { loop: true, volume });
+    this.bgm.play();
+    return this.bgm;
+}
+
+/**
  * @this {Phaser.Scene}
  */
 function doLevel1() {  //each level now has its own function and local variables,
@@ -354,17 +423,17 @@ function doLevel2() {
     if (!level2SetupDone) {
         this.level2.floor = spawnFloor.call(this, 2700, 698);
         this.level2.text = spawnText.call(this, 2200, 640, 'Level 2: Spikes');
-        this.level2.spikes1 = spawnSpikes.call(this, 2500, 560, () => { killPlayer(); });
+        this.level2.spikes1 = spawnSpikes.call(this, 2500, 560, () => { killPlayer.call(this); });
         this.level2.spikes2 = spawnSpikes.call(this, 2700, 560, () => { });
         this.level2.spikes2 = spawnSpikes.call(this, 2830, 560, () => { });
-        this.level2.spikes2m = spawnSpikes.call(this, 2750, 400, () => { killPlayer(); });
+        this.level2.spikes2m = spawnSpikes.call(this, 2750, 400, () => { killPlayer.call(this); });
         this.level2.spikes2mw = spawnWall.call(this, 2780, 400).setScale(1.2, 0.6).refreshBody();
         this.level2.spikes2m.setAngle(-90);
         this.level2.spikes2m.setAlpha(0);
         this.level2.spikes2mw.setAlpha(0);
         this.level2.flyingtrapbox = spawnMovingWall.call(this, 3000, -20, 90);
-        this.level2.flyingtrapbox.setScale(1.5,1);
-        this.level2.flyingtrapspike = spawnMovingSpikes.call(this, 3000, 20, () => { killPlayer(); }, 180);
+        this.level2.flyingtrapbox.setScale(1.5, 1);
+        this.level2.flyingtrapspike = spawnMovingSpikes.call(this, 3000, 20, () => { killPlayer.call(this); }, 180);
         this.level2.flyingtrapspike.setScale(1.7);
         this.level2.flyingtrapStarted = false;
         level2SetupDone = true;
@@ -392,6 +461,7 @@ function doLevel2() {
 function doLevel3() {
     // one-time setup
     if (!level3SetupDone) {
+        
         this.level3.fakefloor = spawnMovingWall.call(this, 3600, 698, 0);
         this.level3.fakefloor.setScale(7, 1.4).refreshBody();
         this.level3.floor = spawnFloor.call(this, 4170, 698);
@@ -411,11 +481,16 @@ function doLevel3() {
         this.level3.fakewall.refreshBody();
         this.level3.fakebutton = spawnButton.call(this, 4300, 552, () => {
             this.level3.fakebutton.setTexture('spikes');
-            killPlayer();
+            killPlayer.call(this);
         });
+        this.level3.musicSwitched = false;
         level3SetupDone = true;
     }
     //loop
+    if(player.x > 3500 && !this.level3.musicSwitched){
+        switchBGM.call(this, 'bg2');
+        this.level3.musicSwitched = true;
+    }
     if (player.x > 3800 && this.level3.wallStage === 0) {
         startLinearMotion.call(this, this.level3.movingwall, 0, -500);
         this.level3.wallStage = 1;
@@ -475,6 +550,7 @@ let level4SetupDone = false;
 function doLevel4() {
     // one-time setup
     if (!level4SetupDone) {
+        
         spawnFloor.call(this, 5300, 698);
         spawnWall.call(this, 5800, 698).setScale(1, 10).refreshBody();
 
@@ -501,7 +577,8 @@ function doLevel4() {
     if (this.level4.button1pressedStage === 0) {
         startLinearMotion.call(this, this.level4.button1, 0, 500);
         this.level4.button1pressedStage = 1;
-        this.level4.spikes = spawnMovingSpikes.call(this, 6100, -100, () => { killPlayer(); }, -90);
+        switchBGM.call(this, 'bg4');
+        this.level4.spikes = spawnMovingSpikes.call(this, 6100, -100, () => { killPlayer.call(this); }, -90);
         this.level4.spikes.setScale(1.5).refreshBody();
         startLinearMotion.call(this, this.level4.spikes, -330, 0);
     }
@@ -555,7 +632,7 @@ function doLevel5() {
         spawnFloor.call(this, 7200, 698);
         spawnText.call(this, 6550, 640, 'Level 5: (not) Working with portals');
         spawnWall.call(this, 6183, 600).refreshBody();
-        spawnLava.call(this, 6900, 540, () => { killPlayer(); }).setScale(3, 1).refreshBody();
+        spawnLava.call(this, 6900, 540, () => { killPlayer.call(this); }).setScale(3, 1).refreshBody();
         spawnIsland.call(this, 6200, 450);
         this.level5.portals = spawnPortal.call(this, 6400, 480, 6400, 150, 0.5);
         this.level5.portalblue = this.level5.portals.blue;
@@ -563,7 +640,7 @@ function doLevel5() {
         this.level5.portalorange.setAngle(90);
         spawnIsland.call(this, 7000, 450);
         spawnIsland.call(this, 8000, 450).setScale(5, 1).refreshBody();
-        this.level5.movingspike = spawnMovingSpikes.call(this, 7750, 430, () => { killPlayer(); }).setScale(1, 1);
+        this.level5.movingspike = spawnMovingSpikes.call(this, 7750, 430, () => { killPlayer.call(this); }).setScale(1, 1);
         this.level5.endportal = this.physics.add.sprite(9290, 430, 'portal');
         this.level5.endportal.body.setAllowGravity(false);
         this.level5.endportal.setScale(3).setImmovable(true).refreshBody();
