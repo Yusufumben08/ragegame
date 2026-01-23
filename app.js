@@ -124,6 +124,13 @@ function update() {
     const right = cursors.right.isDown;
     const up = cursors.up.isDown;
 
+    // Freeze player controls during death
+    if (deathInProgress) {
+        player.setVelocityX(0);
+        player.anims.stop();
+        return;
+    }
+
     if (left) {
         player.setVelocityX(-300);
         player.anims.play('left', true);
@@ -195,6 +202,9 @@ function killPlayer(sceneParam) {
     const scene = sceneParam || this || (player && player.scene) || null;
     const bgm = scene && scene.bgm ? scene.bgm : null;
     
+    // Freeze player movement
+    player.setVelocity(0, 0);
+    
     // Pause BGM
     if (bgm && bgm.isPlaying) {
         bgm.pause();
@@ -206,19 +216,20 @@ function killPlayer(sceneParam) {
         deathSound.once('complete', () => {
             if (bgm) bgm.resume();
             deathSound.destroy();
+            // Reset player to start position
+            player.setPosition(100, 500);
+            player.setVelocity(0, 0);
+            // Allow movement again after teleporting
             deathInProgress = false;
         });
         deathSound.play();
     } else {
         if (bgm) bgm.resume();
-        deathInProgress = false;
-    }
-
-    player.setVelocity(0, 0);
-    setTimeout(() => {
+        // Reset player to start position
         player.setPosition(100, 500);
         player.setVelocity(0, 0);
-    }, 1000);
+        deathInProgress = false;
+    }
 }
 
 function spawnIsland(x, y) {
@@ -654,6 +665,7 @@ function doLevel5() {
         this.level5.portalstage = 0;
         level5SetupDone = true;
         console.log(this.level5.portalblue, this.level5.portalorange);
+        spawnText.call(this, 6100, 500, 'Press button to reset portals');
         spawnButton.call(this, 6100, 420, () => {
             this.level5.portalstage = 0;
             this.level5.portalblue.body.setVelocity(0, 0);
