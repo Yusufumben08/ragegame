@@ -58,6 +58,7 @@ let level1SetupDone = false;
 let level2SetupDone = false;
 let level3SetupDone = false;
 let deathInProgress = false;
+let lastJumpSoundTime = 0;
 /**
  * @this {Phaser.Scene}
  */
@@ -137,8 +138,11 @@ function update() {
 
     if (up && player.body.touching.down) {
         player.setVelocityY(-520);
-        // Play jump sound effect (slightly lower pitch)
-        this.sound.play('jump-sfx', { volume: 0.3, detune: -350 });
+        const now = Date.now();
+        if (now - lastJumpSoundTime > 250) {
+            this.sound.play('jump-sfx', { volume: 0.3, detune: -350 });
+            lastJumpSoundTime = now;
+        }
     }
     // dostuffig
     moveCamera.call(this);
@@ -633,6 +637,7 @@ function doLevel5() {
         spawnText.call(this, 6550, 640, 'Level 5: (not) Working with portals');
         spawnWall.call(this, 6183, 600).refreshBody();
         spawnLava.call(this, 6900, 540, () => { killPlayer.call(this); }).setScale(3, 1).refreshBody();
+        spawnIsland.call(this, 6100, 450);
         spawnIsland.call(this, 6200, 450);
         this.level5.portals = spawnPortal.call(this, 6400, 480, 6400, 150, 0.5);
         this.level5.portalblue = this.level5.portals.blue;
@@ -649,7 +654,7 @@ function doLevel5() {
         this.level5.portalstage = 0;
         level5SetupDone = true;
         console.log(this.level5.portalblue, this.level5.portalorange);
-        spawnButton.call(this, 6200, 410, () => {
+        spawnButton.call(this, 6100, 420, () => {
             this.level5.portalstage = 0;
             this.level5.portalblue.body.setVelocity(0, 0);
             this.level5.portalorange.body.setVelocity(0, 0);
