@@ -59,8 +59,6 @@ let level2SetupDone = false;
 let level3SetupDone = false;
 let deathInProgress = false;
 let lastJumpSoundTime = 0;
-let playerMaskSprite;
-let playerMask;
 /**
  * @this {Phaser.Scene}
  */
@@ -92,7 +90,6 @@ function create() {
     this
     player = this.physics.add.sprite(380, 500, "player");
     player.setScale(2);
-    createPlayerMask.call(this);
     portal1 = objects.create(700, 150, "portal").setScale(3);
     player.setBounce(0.2)
     player.setCollideWorldBounds(false)
@@ -126,11 +123,6 @@ function update() {
     const left = cursors.left.isDown;
     const right = cursors.right.isDown;
     const up = cursors.up.isDown;
-
-    if (playerMaskSprite) {
-        playerMaskSprite.setPosition(player.x, player.y);
-        playerMaskSprite.setScale(player.scaleX, player.scaleY);
-    }
 
     // Freeze player controls during death
     if (deathInProgress) {
@@ -182,42 +174,6 @@ function portalTransition(x, y) {
     player.setPosition(x, y);
     player.setVelocity(0, 0);
     setTimeout(() => { teleporting = false; }, 1000); //
-}
-
-/**
- * @this {Phaser.Scene}
- */
-function createPlayerMask() {
-    if (!player) return;
-
-    // Clean up old mask artifacts
-    if (playerMaskSprite) {
-        playerMaskSprite.destroy();
-    }
-    if (playerMask && playerMask.bitmapMask) {
-        playerMask.bitmapMask.destroy();
-    }
-
-    const width = player.width;
-    const height = player.height;
-    const radius = Math.min(width, height) * 0.25;
-
-    // Draw once to a texture for a stable bitmap mask (avoids ghost trails)
-    const g = this.make.graphics({ add: false });
-    g.fillStyle(0xffffff);
-    g.fillRoundedRect(0, 0, width, height, radius);
-    g.generateTexture('player-mask', width, height);
-    g.destroy();
-
-    playerMaskSprite = this.make.sprite({ key: 'player-mask', add: false });
-    playerMaskSprite.setOrigin(0.5, 0.5);
-    playerMaskSprite.setVisible(false);
-    playerMaskSprite.x = player.x;
-    playerMaskSprite.y = player.y;
-    playerMaskSprite.setScale(player.scaleX, player.scaleY);
-
-    playerMask = playerMaskSprite.createBitmapMask();
-    player.setMask(playerMask);
 }
 
 function getmousepos() {
