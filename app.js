@@ -128,10 +128,8 @@ function update() {
     const up = cursors.up.isDown;
 
     if (playerMaskSprite) {
-        playerMaskSprite.x = player.x;
-        playerMaskSprite.y = player.y;
-        playerMaskSprite.displayWidth = player.displayWidth;
-        playerMaskSprite.displayHeight = player.displayHeight;
+        playerMaskSprite.setPosition(player.x, player.y);
+        playerMaskSprite.setScale(player.scaleX, player.scaleY);
     }
 
     // Freeze player controls during death
@@ -200,8 +198,8 @@ function createPlayerMask() {
         playerMask.bitmapMask.destroy();
     }
 
-    const width = player.displayWidth;
-    const height = player.displayHeight;
+    const width = player.width;
+    const height = player.height;
     const radius = Math.min(width, height) * 0.25;
 
     // Draw once to a texture for a stable bitmap mask (avoids ghost trails)
@@ -216,8 +214,7 @@ function createPlayerMask() {
     playerMaskSprite.setVisible(false);
     playerMaskSprite.x = player.x;
     playerMaskSprite.y = player.y;
-    playerMaskSprite.displayWidth = width;
-    playerMaskSprite.displayHeight = height;
+    playerMaskSprite.setScale(player.scaleX, player.scaleY);
 
     playerMask = playerMaskSprite.createBitmapMask();
     player.setMask(playerMask);
