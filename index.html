@@ -6,8 +6,8 @@
     <title>Unfun Platformer</title>
     <style>
         canvas {
-            position: absolute;
-            margin-inline: 5vw;
+            display: block;
+            margin: 20px auto;
             border: 10px solid white;
             width: 800px;
             height: 600px;
@@ -16,7 +16,12 @@
         body {
             background-color: #FF7151;
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
+        }
+
+        #game-container {
+            display: flex;
+            justify-content: center;
         }
     </style>
 </head>
@@ -25,11 +30,26 @@
     <div id="game-container">
         <script src="./dist/app.js"></script>
     </div>
-    
-</body>
-    <div>
+    <div id="info-text" style="color: white; text-align: center; padding: 2em; font-family:Arial, Helvetica, sans-serif;">
         If the game is white, its probably loading. It takes a bit to load. Please wait :) <br>
         If something is missing and replaced with a square with green borders on it the texture failed to load. <br>
         Please refresh the page if it happens. I have not been able to replicate it consistently to find the error.
     </div>
-</html>
+    <script>
+        // Wait for canvas to be created by Phaser, then move text below it
+        function moveTextBelow() {
+            const canvas = document.querySelector('canvas');
+            const infoText = document.getElementById('info-text');
+            
+            if (canvas && infoText) {
+                // Move info text after the canvas in the DOM
+                canvas.parentNode.insertBefore(infoText, canvas.nextSibling);
+            } else {
+                // Retry if canvas isn't ready yet
+                setTimeout(moveTextBelow, 100);
+            }
+        }
+        
+        moveTextBelow();
+    </script>
+</body>
