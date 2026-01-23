@@ -90,7 +90,7 @@ function create() {
     player = this.physics.add.sprite(380, 500, "player");
     player.setScale(2);
     portal1 = objects.create(700, 150, "portal").setScale(3);
-    // player.setBounce(0.2)
+    player.setBounce(0.2)
     player.setCollideWorldBounds(false)
     this.physics.add.collider(player, platforms)
     cursors = this.input.keyboard.createCursorKeys()
@@ -649,6 +649,15 @@ function doLevel5() {
         this.level5.portalstage = 0;
         level5SetupDone = true;
         console.log(this.level5.portalblue, this.level5.portalorange);
+        spawnButton.call(this, 6200, 410, () => {
+            this.level5.portalstage = 0;
+            this.level5.portalblue.body.setVelocity(0, 0);
+            this.level5.portalorange.body.setVelocity(0, 0);
+            this.level5.portalblue.x = 6400;
+            this.level5.portalblue.y = 480;
+            this.level5.portalorange.x = 6400;
+            this.level5.portalorange.y = 150;
+        });
         spawnButton.call(this, 7000, 430, () => {
             this.level5.portalstage = 2;
         });
