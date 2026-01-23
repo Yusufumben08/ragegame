@@ -59,6 +59,7 @@ let level2SetupDone = false;
 let level3SetupDone = false;
 let deathInProgress = false;
 let lastJumpSoundTime = 0;
+let playerMaskGraphics;
 /**
  * @this {Phaser.Scene}
  */
@@ -90,6 +91,7 @@ function create() {
     this
     player = this.physics.add.sprite(380, 500, "player");
     player.setScale(2);
+    createPlayerMask.call(this);
     portal1 = objects.create(700, 150, "portal").setScale(3);
     player.setBounce(0.2)
     player.setCollideWorldBounds(false)
@@ -123,6 +125,11 @@ function update() {
     const left = cursors.left.isDown;
     const right = cursors.right.isDown;
     const up = cursors.up.isDown;
+
+    if (playerMaskGraphics) {
+        playerMaskGraphics.x = player.x - player.displayWidth / 2;
+        playerMaskGraphics.y = player.y - player.displayHeight / 2;
+    }
 
     // Freeze player controls during death
     if (deathInProgress) {
@@ -174,6 +181,31 @@ function portalTransition(x, y) {
     player.setPosition(x, y);
     player.setVelocity(0, 0);
     setTimeout(() => { teleporting = false; }, 1000); //
+}
+
+/**
+ * @this {Phaser.Scene}
+ */
+function createPlayerMask() {
+    if (!player) return;
+    if (playerMaskGraphics) {
+        playerMaskGraphics.destroy();
+    }
+
+    const width = player.displayWidth;
+    const height = player.displayHeight;
+    const radius = Math.min(width, height) * 0.25;
+
+    playerMaskGraphics = this.add.graphics({
+        x: player.x - width / 2,
+        y: player.y - height / 2
+    });
+    playerMaskGraphics.fillStyle(0xffffff);
+    playerMaskGraphics.fillRoundedRect(0, 0, width, height, radius);
+    playerMaskGraphics.setVisible(false);
+
+    const mask = playerMaskGraphics.createGeometryMask();
+    player.setMask(mask);
 }
 
 function getmousepos() {
