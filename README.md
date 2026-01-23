@@ -10,4 +10,7 @@ Game files are a bit unorganized and messy but it works, Guessing coordinates to
 
 Small video also as a hint for level 1:
 
-https://github.com/Yusufumben08/ragegame/tree/main/gh-image/video.mp4
+
+
+https://github.com/user-attachments/assets/52806778-1cb7-408a-99a3-eb30df51e7bf
+
