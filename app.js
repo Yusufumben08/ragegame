@@ -637,7 +637,7 @@ function doLevel5() {
         spawnText.call(this, 6550, 640, 'Level 5: (not) Working with portals');
         spawnWall.call(this, 6183, 600).refreshBody();
         spawnLava.call(this, 6900, 540, () => { killPlayer.call(this); }).setScale(3, 1).refreshBody();
-        spawnIsland.call(this, 6100, 450);
+        spawnIsland.call(this, 6100, 450).setScale(2, 1).refreshBody();
         spawnIsland.call(this, 6200, 450);
         this.level5.portals = spawnPortal.call(this, 6400, 480, 6400, 150, 0.5);
         this.level5.portalblue = this.level5.portals.blue;
@@ -669,7 +669,7 @@ function doLevel5() {
         this.physics.add.overlap(player, this.level5.endportal, function () {
             portalTransition.call(this, 1000, 550);
             setTimeout(() => {
-                window.location.href = "/win.html";
+                window.location.href = "/ragegame/win.html";
             }, 3000);
         }, null, this);
     }
