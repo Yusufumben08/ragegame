@@ -59,7 +59,8 @@ let level2SetupDone = false;
 let level3SetupDone = false;
 let deathInProgress = false;
 let lastJumpSoundTime = 0;
-let playerMaskGraphics;
+let playerMaskSprite;
+let playerMask;
 /**
  * @this {Phaser.Scene}
  */
@@ -126,9 +127,11 @@ function update() {
     const right = cursors.right.isDown;
     const up = cursors.up.isDown;
 
-    if (playerMaskGraphics) {
-        playerMaskGraphics.x = player.x - player.displayWidth / 2;
-        playerMaskGraphics.y = player.y - player.displayHeight / 2;
+    if (playerMaskSprite) {
+        playerMaskSprite.x = player.x;
+        playerMaskSprite.y = player.y;
+        playerMaskSprite.displayWidth = player.displayWidth;
+        playerMaskSprite.displayHeight = player.displayHeight;
     }
 
     // Freeze player controls during death
@@ -188,24 +191,36 @@ function portalTransition(x, y) {
  */
 function createPlayerMask() {
     if (!player) return;
-    if (playerMaskGraphics) {
-        playerMaskGraphics.destroy();
+
+    // Clean up old mask artifacts
+    if (playerMaskSprite) {
+        playerMaskSprite.destroy();
+    }
+    if (playerMask && playerMask.bitmapMask) {
+        playerMask.bitmapMask.destroy();
     }
 
     const width = player.displayWidth;
     const height = player.displayHeight;
     const radius = Math.min(width, height) * 0.25;
 
-    playerMaskGraphics = this.add.graphics({
-        x: player.x - width / 2,
-        y: player.y - height / 2
-    });
-    playerMaskGraphics.fillStyle(0xffffff);
-    playerMaskGraphics.fillRoundedRect(0, 0, width, height, radius);
-    playerMaskGraphics.setVisible(false);
+    // Draw once to a texture for a stable bitmap mask (avoids ghost trails)
+    const g = this.make.graphics({ add: false });
+    g.fillStyle(0xffffff);
+    g.fillRoundedRect(0, 0, width, height, radius);
+    g.generateTexture('player-mask', width, height);
+    g.destroy();
 
-    const mask = playerMaskGraphics.createGeometryMask();
-    player.setMask(mask);
+    playerMaskSprite = this.make.sprite({ key: 'player-mask', add: false });
+    playerMaskSprite.setOrigin(0.5, 0.5);
+    playerMaskSprite.setVisible(false);
+    playerMaskSprite.x = player.x;
+    playerMaskSprite.y = player.y;
+    playerMaskSprite.displayWidth = width;
+    playerMaskSprite.displayHeight = height;
+
+    playerMask = playerMaskSprite.createBitmapMask();
+    player.setMask(playerMask);
 }
 
 function getmousepos() {
