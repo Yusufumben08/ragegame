@@ -21,19 +21,6 @@ background: linear-gradient(90deg, rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 
         BG music : Bounce Tales OST (also the death noise) <br>
     </div>
     <script>
-        function rainbowText() {
-            const colors = ['red', 'green', 'blue', 'indigo', 'violet'];
-            let colorIndex = 0;
-            const elements = document.querySelectorAll('h1, div, a');
-
-            setInterval(() => {
-                elements.forEach(el => {
-                    el.style.color = colors[colorIndex];
-                });
-                colorIndex = (colorIndex + 1) % colors.length;
-            }, 500);
-        }
-        rainbowText();
 
         function confettiEffect() {
             const confettiCount = 100;
